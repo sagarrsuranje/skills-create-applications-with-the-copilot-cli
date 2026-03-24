@@ -1,4 +1,4 @@
-const { add, sub, mul, div } = require('../calculator');
+const { add, sub, mul, div, modulo, power, squareRoot } = require('../calculator');
 const { spawnSync } = require('child_process');
 
 describe('calculator functions', () => {
@@ -34,6 +34,23 @@ describe('calculator functions', () => {
   test('division by zero returns Infinity when using exported function', () => {
     expect(div(1, 0)).toBe(Infinity);
   });
+
+  // New operation unit tests
+  test('modulo: 5 % 2 = 1', () => {
+    expect(modulo(5, 2)).toBe(1);
+  });
+
+  test('power: 2 ^ 3 = 8', () => {
+    expect(power(2, 3)).toBe(8);
+  });
+
+  test('squareRoot: sqrt(16) = 4', () => {
+    expect(squareRoot(16)).toBe(4);
+  });
+
+  test('squareRoot of negative number throws', () => {
+    expect(() => squareRoot(-9)).toThrow(/square root of negative/i);
+  });
 });
 
 describe('CLI integration', () => {
@@ -54,5 +71,36 @@ describe('CLI integration', () => {
     const r = spawnSync(process.execPath, ['src/calculator.js', 'add', 'a', '1'], { encoding: 'utf8' });
     expect(r.status).toBe(1);
     expect(r.stderr).toMatch(/operands must be valid numbers/i);
+  });
+
+  // New CLI integration tests
+  test('CLI mod 5 2 prints 1 and exits 0', () => {
+    const r = spawnSync(process.execPath, ['src/calculator.js', 'mod', '5', '2'], { encoding: 'utf8' });
+    expect(r.status).toBe(0);
+    expect(r.stdout.trim()).toBe('1');
+  });
+
+  test('CLI pow 2 3 prints 8 and exits 0', () => {
+    const r = spawnSync(process.execPath, ['src/calculator.js', 'pow', '2', '3'], { encoding: 'utf8' });
+    expect(r.status).toBe(0);
+    expect(r.stdout.trim()).toBe('8');
+  });
+
+  test('CLI sqrt 16 prints 4 and exits 0', () => {
+    const r = spawnSync(process.execPath, ['src/calculator.js', 'sqrt', '16'], { encoding: 'utf8' });
+    expect(r.status).toBe(0);
+    expect(r.stdout.trim()).toBe('4');
+  });
+
+  test('CLI sqrt -1 returns non-zero and prints error', () => {
+    const r = spawnSync(process.execPath, ['src/calculator.js', 'sqrt', '-1'], { encoding: 'utf8' });
+    expect(r.status).toBe(1);
+    expect(r.stderr).toMatch(/square root of negative/i);
+  });
+
+  test('CLI mod by zero exits non-zero and prints error', () => {
+    const r = spawnSync(process.execPath, ['src/calculator.js', 'mod', '1', '0'], { encoding: 'utf8' });
+    expect(r.status).toBe(1);
+    expect(r.stderr).toMatch(/modulo by zero/i);
   });
 });
